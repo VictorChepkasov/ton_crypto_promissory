@@ -4,7 +4,7 @@ import { PromissoryMaster } from '../wrappers/PromissoryMaster';
 import '@ton/test-utils';
 import { Promissory } from '../wrappers/Promissory';
 
-describe('NftCollection', () => {
+describe('Crypto Promissory Tests', () => {
     let blockchain: Blockchain;
     let promissoryMaster: SandboxContract<PromissoryMaster>;
     let deployer: SandboxContract<TreasuryContract>;
