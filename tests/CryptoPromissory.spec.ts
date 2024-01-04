@@ -16,7 +16,7 @@ describe('NftCollection', () => {
     let dateOfClose = 1707013424n
 
     const replacer = (key: any, value: any) =>
-            typeof value === "bigint" ? value.toString() : value;
+        typeof value === "bigint" ? value.toString() : value;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
