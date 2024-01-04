@@ -25,7 +25,7 @@ describe('Crypto Promissory Tests', () => {
         holder = await blockchain.treasury('holder')
         drawer = await blockchain.treasury('drawer')
 
-        const deployResult = await promissoryMaster.send(
+        await promissoryMaster.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
