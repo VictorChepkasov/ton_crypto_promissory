@@ -16,6 +16,10 @@ contract PromissoryMaster with Deployable, Ownable {
         self.masterContent = "Crypto Promissory Master";    
     }
 
+    receive() {
+        dump("funds received");
+    }
+
     receive(msg: Mint){
         require(self.nextPromissoryIndex >= 0, "non-sequential NFTs");
         let init: StateInit = self.promissoryInit(self.nextPromissoryIndex);
@@ -33,7 +37,7 @@ contract PromissoryMaster with Deployable, Ownable {
                 holder: msg.holder,
                 drawer: sender(),
                 promissoryAmount: msg.promissoryAmount,
-                promissoryCommision: msg.promissoryCommision,
+                promissoryFee: msg.promissoryFee,
                 dateOfClose: msg.dateOfClose
             }.toCell(),
             code: init.code,
@@ -41,6 +45,17 @@ contract PromissoryMaster with Deployable, Ownable {
         });
 
         self.nextPromissoryIndex = self.nextPromissoryIndex + 1;
+    }
+
+    receive(msg: WithdrawFee) {
+        require(sender() == self.owner, "Only Owner!");
+        let msgValue: Int = myBalance() - (self.minTonForStorage + self.gasConsumption);
+        send(SendParameters{
+            to: sender(),
+            value: msgValue,
+            mode: SendIgnoreErrors,
+            body: "Withdrawal fee".asComment()
+        });
     }
 
     get fun promissoryInit(promissoryIndex: Int): StateInit {
@@ -57,5 +72,9 @@ contract PromissoryMaster with Deployable, Ownable {
             masterContent: self.masterContent.asSlice().asCell(),
             owner: self.owner
         };
+    }
+
+    get fun masterBalance(): Int {
+        return myBalance();
     }
 }

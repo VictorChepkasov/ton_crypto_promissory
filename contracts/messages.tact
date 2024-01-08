@@ -9,14 +9,15 @@ struct PromissoryInfo {
     holder: Address;
     id: Int;
     promissoryAmount: Int;
-    promissoryCommision: Int;
+    promissoryFee: Int;
     dateOfClose: Int;
+    closed: Bool;
 }
 
 message Mint {
     holder: Address;
     promissoryAmount: Int;
-    promissoryCommision: Int;
+    promissoryFee: Int;
     dateOfClose: Int;
 }
 
@@ -29,6 +30,9 @@ message InternalNewPromissory {
     drawer: Address;
     holder: Address;
     promissoryAmount: Int;
-    promissoryCommision: Int;
+    promissoryFee: Int;
     dateOfClose: Int;
 }
+
+message WithdrawPromissory {}
+message WithdrawFee {}
