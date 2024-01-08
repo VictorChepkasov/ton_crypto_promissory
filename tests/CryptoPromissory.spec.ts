@@ -3,16 +3,21 @@ import { toNano } from 'ton-core';
 import { PromissoryMaster } from '../wrappers/PromissoryMaster';
 import '@ton/test-utils';
 import { Promissory } from '../wrappers/Promissory';
+import { stringify } from 'querystring';
 
 describe('Crypto Promissory Tests', () => {
+    const minTonForStorage = toNano("0.3")
+
     let blockchain: Blockchain;
     let promissoryMaster: SandboxContract<PromissoryMaster>;
+    let promissory: SandboxContract<Promissory>
     let deployer: SandboxContract<TreasuryContract>;
     let holder: SandboxContract<TreasuryContract>;
     let drawer: SandboxContract<TreasuryContract>;
+    let newHolder: SandboxContract<TreasuryContract>;
 
     let promissoryAmount = 4321n
-    let promissoryCommision = 2n
+    let promissoryFee = 2n
     let dateOfClose = 1707013424n
 
     const replacer = (key: any, value: any) =>
@@ -24,6 +29,7 @@ describe('Crypto Promissory Tests', () => {
         deployer = await blockchain.treasury('deployer');
         holder = await blockchain.treasury('holder')
         drawer = await blockchain.treasury('drawer')
+        newHolder = await blockchain.treasury('newHolder')
 
         await promissoryMaster.send(
             deployer.getSender(),
@@ -35,6 +41,18 @@ describe('Crypto Promissory Tests', () => {
                 queryId: 0n,
             }
         );
+
+        await promissoryMaster.send(drawer.getSender(), {
+            value: toNano("0.3")
+        }, {
+            $$type: 'Mint',
+            holder: holder.address,
+            promissoryAmount: promissoryAmount,
+            promissoryFee: promissoryFee,
+            dateOfClose: dateOfClose
+        })
+
+        promissory = blockchain.openContract(Promissory.fromAddress(await promissoryMaster.getPromissoryAddressByIndex(0n)))
     });
 
     it('should deploy', async () => {
@@ -43,18 +61,6 @@ describe('Crypto Promissory Tests', () => {
     });
 
     it("create (mint) promissory", async () => {
-        await promissoryMaster.send(drawer.getSender(), {
-            value: toNano("0.3")
-        }, {
-            $$type: 'Mint',
-            holder: holder.address,
-            promissoryAmount: promissoryAmount,
-            promissoryCommision: promissoryCommision,
-            dateOfClose: dateOfClose
-        })
-
-        const promissory: SandboxContract<Promissory> = blockchain.openContract(Promissory.fromAddress(await promissoryMaster.getPromissoryAddressByIndex(0n)))
-        
         let promissoryInfo = await promissory.getPromissoryInfo();
         let validPromissoryInfo = {
             '$$type': 'PromissoryInfo',
@@ -62,27 +68,15 @@ describe('Crypto Promissory Tests', () => {
             holder: holder.address,
             id: 0n,
             promissoryAmount: promissoryAmount,
-            promissoryCommision: promissoryCommision,
-            dateOfClose: dateOfClose
+            promissoryFee: promissoryFee,
+            dateOfClose: dateOfClose,
+            closed: false
         } 
 
         expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
     });
 
     it('promissory transfer', async () => {
-        await promissoryMaster.send(drawer.getSender(), {
-            value: toNano("0.3")
-        }, {
-            $$type: 'Mint',
-            holder: holder.address,
-            promissoryAmount: promissoryAmount,
-            promissoryCommision: promissoryCommision,
-            dateOfClose: dateOfClose
-        })
-
-        const promissory: SandboxContract<Promissory> = blockchain.openContract(Promissory.fromAddress(await promissoryMaster.getPromissoryAddressByIndex(0n)))
-        const newHolder = await blockchain.treasury('newHolder')
-
         await promissory.send(holder.getSender(), {
             value: toNano("0.3")
         }, {
@@ -98,10 +92,53 @@ describe('Crypto Promissory Tests', () => {
             holder: newHolder.address,
             id: 0n,
             promissoryAmount: promissoryAmount,
-            promissoryCommision: promissoryCommision,
-            dateOfClose: dateOfClose
+            promissoryFee: promissoryFee,
+            dateOfClose: dateOfClose,
+            closed: false
         }
 
         expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
+    })
+
+    it('pay promissory', async () => {
+        console.log("Promissory master balance: ", await promissoryMaster.getMasterBalance())
+        blockchain.now = 1707013425
+
+        console.log(
+            "Master: ", promissoryMaster.address,
+            "Proissory: ", promissory.address,
+            "Drawer: ", drawer.address
+        )
+        let payTx = await promissory.send(drawer.getSender(), {
+            value: toNano("0.3")
+        }, "pay")
+
+        console.log(payTx.events)
+        // console.log(await promissory.getPromissoryBalance())
+
+        let promissoryInfo = await promissory.getPromissoryInfo()
+        console.log(promissoryInfo)
+        let validPromissoryInfo = {
+            '$$type': 'PromissoryInfo',
+            drawer: drawer.address,
+            holder: newHolder.address,
+            id: 0n,
+            promissoryAmount: promissoryAmount,
+            promissoryFee: promissoryFee,
+            dateOfClose: dateOfClose,
+            closed: true
+        }
+
+        console.log("Promissory master balance: ", await promissoryMaster.getMasterBalance())
+
+        // expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
+    })
+
+    it('withdraw promissory', async () => {
+
+    })
+
+    it('withdraw promissory fee', async () => {
+
     })
 });
