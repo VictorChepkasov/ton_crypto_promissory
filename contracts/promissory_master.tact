@@ -49,12 +49,10 @@ contract PromissoryMaster with Deployable, Ownable {
 
     receive("withdraw") {
         require(sender() == self.owner, "Only Owner!");
-        let msgValue: Int = myBalance() - (self.minTonForStorage + self.gasConsumption);
         send(SendParameters{
             to: sender(),
-            value: msgValue,
-            mode: SendIgnoreErrors,
-            body: "Withdrawal fee".asComment()
+            value: myBalance() - context().value - (self.minTonForStorage + self.gasConsumption),
+            mode: SendIgnoreErrors
         });
     }
 

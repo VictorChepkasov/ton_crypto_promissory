@@ -14,8 +14,8 @@ contract Promissory with Deployable {
     promissoryAmount: Int as coins;
     promissoryFee: Int;
     dateOfClose: Int;
-    deployed: Bool = false;
-    closed: Bool = false;
+    deployed: Bool;
+    closed: Bool;
 
     init(
         collectionAddress: Address,
@@ -28,6 +28,8 @@ contract Promissory with Deployable {
         self.promissoryAmount = 0;
         self.promissoryFee = 0;
         self.dateOfClose = 0;
+        self.deployed = false;
+        self.closed = false;
     }
 
     receive(msg: InternalNewPromissory) {
@@ -53,20 +55,19 @@ contract Promissory with Deployable {
         self.closed = true;
         send(SendParameters{
             to: self.collectionAddress,
-            value: ton("0.1"),
+            value: msgValue,
             mode: SendIgnoreErrors,
             body: "Promissory fee".asComment()
         });
     }
 
     receive("withdraw") {
-        require(self.closed, "Promissory is not closed!");
-        require(myBalance() >= self.promissoryAmount, "Insufficient funds");
+        self.onlyHolder();
+        require(self.closed == true, "Promissory is not closed!");
         send(SendParameters{
             to: sender(),
-            value: myBalance(),
-            mode: SendIgnoreErrors + SendRemainingValue,
-            body: "Withdraw promissory".asComment()
+            value: myBalance() - context().value - (self.minTonForStorage + self.gasConsumption),
+            mode: SendIgnoreErrors
         });
     }
 

@@ -1,9 +1,10 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { toNano } from 'ton-core';
+import { toNano, fromNano } from 'ton-core';
 import { PromissoryMaster } from '../wrappers/PromissoryMaster';
 import '@ton/test-utils';
 import { Promissory } from '../wrappers/Promissory';
 import { stringify } from 'querystring';
+import { captureRejectionSymbol } from 'events';
 
 describe('Crypto Promissory Tests', () => {
     const minTonForStorage = toNano("0.3")
@@ -110,7 +111,6 @@ describe('Crypto Promissory Tests', () => {
         }, "pay")
         
         let promissoryInfo = await promissory.getPromissoryInfo()
-        console.log(promissoryInfo)
         
         let validPromissoryInfo = {
             '$$type': 'PromissoryInfo',
@@ -122,17 +122,32 @@ describe('Crypto Promissory Tests', () => {
             dateOfClose: dateOfClose,
             closed: true
         }
-        console.log(validPromissoryInfo)
 
         expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
         expect(await promissoryMaster.getMasterBalance()).toBeGreaterThan(beforeMasterBalancee)
     })
 
     it('withdraw promissory', async () => {
+        let promissoryBeforeBalance: bigint = await promissory.getPromissoryBalance()
+        blockchain.now = 1707013425
+        await promissory.send(drawer.getSender(), {
+            value: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee)
+        }, "pay")
 
+        await promissory.send(holder.getSender(), {
+            value: toNano("0.1")
+        }, "withdraw")
+        expect(await promissory.getPromissoryBalance()).toBeLessThan(promissoryBeforeBalance)
     })
 
     it('withdraw promissory fee', async () => {
-
+        await promissoryMaster.send(deployer.getSender(), {
+            value: toNano("1")
+        }, "Promissory fee")
+        let beforeMasterBalancee: bigint = await promissoryMaster.getMasterBalance()
+        await promissoryMaster.send(deployer.getSender(), {
+            value: toNano("0.1")
+        }, "withdraw")
+        expect(await promissoryMaster.getMasterBalance()).toBeLessThan(beforeMasterBalancee)
     })
 });
