@@ -47,8 +47,8 @@ contract Promissory with Deployable {
 
     receive("pay") {
         require(sender() == self.drawer, "Only Drawer!");
-        require(context().value >= self.promissoryAmount, "Insufficient funds!");
-        require(now() >= self.dateOfClose, "It's not closing time yet!");
+        // require(context().value >= self.promissoryAmount, "Insufficient funds!");
+        // require(now() >= self.dateOfClose, "It's not closing time yet!");
         let msgValue: Int = myBalance() - (self.minTonForStorage + self.gasConsumption);
         self.closed = true;
         send(SendParameters{
