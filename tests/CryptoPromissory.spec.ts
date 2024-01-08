@@ -135,18 +135,19 @@ describe('Crypto Promissory Tests', () => {
         }, "pay")
 
         await promissory.send(holder.getSender(), {
-            value: toNano("0.1")
+            value: toNano("0.03")
         }, "withdraw")
         expect(await promissory.getPromissoryBalance()).toBeLessThan(promissoryBeforeBalance)
     })
 
     it('withdraw promissory fee', async () => {
-        await promissoryMaster.send(deployer.getSender(), {
-            value: toNano("1")
-        }, "Promissory fee")
+        blockchain.now = 1707013425
+        await promissory.send(drawer.getSender(), {
+            value: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee)
+        }, "pay")
         let beforeMasterBalancee: bigint = await promissoryMaster.getMasterBalance()
         await promissoryMaster.send(deployer.getSender(), {
-            value: toNano("0.1")
+            value: toNano("0.03")
         }, "withdraw")
         expect(await promissoryMaster.getMasterBalance()).toBeLessThan(beforeMasterBalancee)
     })
