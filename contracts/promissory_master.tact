@@ -16,7 +16,7 @@ contract PromissoryMaster with Deployable, Ownable {
         self.masterContent = "Crypto Promissory Master";    
     }
 
-    receive() {
+    receive("Promissory fee") {
         dump("funds received");
     }
 
