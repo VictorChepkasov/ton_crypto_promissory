@@ -34,7 +34,7 @@ contract Promissory with Deployable {
         require(sender() == self.collectionAddress, "Only Master");
         self.drawer = msg.drawer;
         self.holder = msg.holder;
-        self.promissoryAmount = msg.promissoryAmount;
+        self.promissoryAmount = msg.promissoryAmount + (msg.promissoryAmount / 100 * msg.promissoryFee);
         self.promissoryFee = msg.promissoryFee;
         self.dateOfClose = msg.dateOfClose;
         self.deployed = true;

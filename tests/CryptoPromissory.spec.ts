@@ -47,7 +47,7 @@ describe('Crypto Promissory Tests', () => {
         }, {
             $$type: 'Mint',
             holder: holder.address,
-            promissoryAmount: promissoryAmount,
+            promissoryAmount: toNano(promissoryAmount),
             promissoryFee: promissoryFee,
             dateOfClose: dateOfClose
         })
@@ -67,7 +67,7 @@ describe('Crypto Promissory Tests', () => {
             drawer: drawer.address,
             holder: holder.address,
             id: 0n,
-            promissoryAmount: promissoryAmount,
+            promissoryAmount: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee),
             promissoryFee: promissoryFee,
             dateOfClose: dateOfClose,
             closed: false
@@ -84,14 +84,14 @@ describe('Crypto Promissory Tests', () => {
             queryId: 0n,
             newHolder: newHolder.address
         })
-        
+
         let promissoryInfo = await promissory.getPromissoryInfo()
         let validPromissoryInfo = {
             '$$type': 'PromissoryInfo',
             drawer: drawer.address,
             holder: newHolder.address,
             id: 0n,
-            promissoryAmount: promissoryAmount,
+            promissoryAmount: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee),
             promissoryFee: promissoryFee,
             dateOfClose: dateOfClose,
             closed: false
@@ -105,8 +105,8 @@ describe('Crypto Promissory Tests', () => {
         blockchain.now = 1707013425
 
         console.log(
-            "Master: ", promissoryMaster.address,
-            "Proissory: ", promissory.address,
+            "Master: ", promissoryMaster.address, "\n",
+            "Proissory: ", promissory.address, "\n",
             "Drawer: ", drawer.address
         )
         let payTx = await promissory.send(drawer.getSender(), {
@@ -123,7 +123,7 @@ describe('Crypto Promissory Tests', () => {
             drawer: drawer.address,
             holder: newHolder.address,
             id: 0n,
-            promissoryAmount: promissoryAmount,
+            promissoryAmount: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee),
             promissoryFee: promissoryFee,
             dateOfClose: dateOfClose,
             closed: true

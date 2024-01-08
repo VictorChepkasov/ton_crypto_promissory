@@ -8,7 +8,7 @@ struct PromissoryInfo {
     drawer: Address;
     holder: Address;
     id: Int;
-    promissoryAmount: Int;
+    promissoryAmount: Int as coins;
     promissoryFee: Int;
     dateOfClose: Int;
     closed: Bool;
@@ -16,7 +16,7 @@ struct PromissoryInfo {
 
 message Mint {
     holder: Address;
-    promissoryAmount: Int;
+    promissoryAmount: Int as coins;
     promissoryFee: Int;
     dateOfClose: Int;
 }
@@ -29,7 +29,7 @@ message Transfer {
 message InternalNewPromissory {
     drawer: Address;
     holder: Address;
-    promissoryAmount: Int;
+    promissoryAmount: Int as coins;
     promissoryFee: Int;
     dateOfClose: Int;
 }
