@@ -101,37 +101,31 @@ describe('Crypto Promissory Tests', () => {
     })
 
     it('pay promissory', async () => {
-        console.log("Promissory master balance: ", await promissoryMaster.getMasterBalance())
+        console.log(`Master: ${promissoryMaster.address}\nProissory: ${promissory.address}\nDrawer: ${drawer.address}\nHolder: ${holder.address}\nNew Holder: ${newHolder.address}`)
         blockchain.now = 1707013425
+        let beforeMasterBalancee: bigint = await promissoryMaster.getMasterBalance()
 
-        console.log(
-            "Master: ", promissoryMaster.address, "\n",
-            "Proissory: ", promissory.address, "\n",
-            "Drawer: ", drawer.address
-        )
-        let payTx = await promissory.send(drawer.getSender(), {
+        await promissory.send(drawer.getSender(), {
             value: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee)
         }, "pay")
-
-        console.log(payTx.events)
-        // console.log(await promissory.getPromissoryBalance())
-
+        
         let promissoryInfo = await promissory.getPromissoryInfo()
         console.log(promissoryInfo)
+        
         let validPromissoryInfo = {
             '$$type': 'PromissoryInfo',
             drawer: drawer.address,
-            holder: newHolder.address,
+            holder: holder.address,
             id: 0n,
             promissoryAmount: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee),
             promissoryFee: promissoryFee,
             dateOfClose: dateOfClose,
             closed: true
         }
+        console.log(validPromissoryInfo)
 
-        console.log("Promissory master balance: ", await promissoryMaster.getMasterBalance())
-
-        // expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
+        expect(JSON.stringify(promissoryInfo, replacer)).toEqual(JSON.stringify(validPromissoryInfo, replacer))
+        expect(await promissoryMaster.getMasterBalance()).toBeGreaterThan(beforeMasterBalancee)
     })
 
     it('withdraw promissory', async () => {
