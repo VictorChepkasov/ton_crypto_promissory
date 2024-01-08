@@ -33,6 +33,3 @@ message InternalNewPromissory {
     promissoryFee: Int;
     dateOfClose: Int;
 }
-
-message WithdrawPromissory {}
-message WithdrawFee {}

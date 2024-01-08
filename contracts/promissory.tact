@@ -59,7 +59,7 @@ contract Promissory with Deployable {
         });
     }
 
-    receive(msg: WithdrawPromissory) {
+    receive("withdraw") {
         require(self.closed, "Promissory is not closed!");
         require(myBalance() >= self.promissoryAmount, "Insufficient funds");
         send(SendParameters{

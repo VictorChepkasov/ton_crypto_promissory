@@ -47,7 +47,7 @@ contract PromissoryMaster with Deployable, Ownable {
         self.nextPromissoryIndex = self.nextPromissoryIndex + 1;
     }
 
-    receive(msg: WithdrawFee) {
+    receive("withdraw") {
         require(sender() == self.owner, "Only Owner!");
         let msgValue: Int = myBalance() - (self.minTonForStorage + self.gasConsumption);
         send(SendParameters{
