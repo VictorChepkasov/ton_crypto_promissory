@@ -110,7 +110,7 @@ describe('Crypto Promissory Tests', () => {
             "Drawer: ", drawer.address
         )
         let payTx = await promissory.send(drawer.getSender(), {
-            value: toNano("0.3")
+            value: toNano(promissoryAmount) + (toNano(promissoryAmount) / 100n * promissoryFee)
         }, "pay")
 
         console.log(payTx.events)
